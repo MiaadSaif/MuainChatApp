@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:file_picker/file_picker.dart';
 
 class ChatScreen extends StatefulWidget {
   final String name;
@@ -12,19 +13,20 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   List<Map<String, String>> messages = [
-    {"text": "Lorem ipsum is simply dummy text", "sender": "other"},
-    {"text": "Okay 😃", "sender": "me"},
-    {"text": "It has survived not only five centuries...", "sender": "other"},
     {
-      "text": "Contrary to popular belief, Lorem Ipsum is not random text.",
-      "sender": "me",
-    },
-    {
-      "text":
-          "The generated Lorem Ipsum is therefore always free from repetition.",
+      "text": "Hello, I'm Dr. Jamal Smulikov\nIs there anything I can help?",
       "sender": "other",
     },
-    {"text": "😎😂😃", "sender": "me"},
+    {
+      "text": "Hi, Dr. Jamal! I have a toothache since yesterday morning",
+      "sender": "me",
+    },
+    {"text": "Have you taken any medicine so far?", "sender": "other"},
+    {"text": "Not yet, doctor", "sender": "me"},
+    {
+      "text": "You must take Proris medicine, to ease the pain in your teeth",
+      "sender": "other",
+    },
   ];
 
   TextEditingController messageController = TextEditingController();
@@ -38,37 +40,78 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  // Method to handle file attachment
+  Future<void> attachFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      // Handle web platform differently
+      if (result.files.single.bytes != null) {
+        // On web, access bytes property and add a placeholder file name
+        print("File selected: ${result.files.single.name}");
+        setState(() {
+          messages.add({
+            "text": "📎 File attached: ${result.files.single.name}",
+            "sender": "me",
+          });
+        });
+      } else if (result.files.single.path != null) {
+        // Handle non-web platforms (mobile/desktop)
+        String fileName = result.files.single.name;
+        print("File selected: $fileName");
+        setState(() {
+          messages.add({"text": "📎 File attached: $fileName", "sender": "me"});
+        });
+      }
+    } else {
+      print("File selection canceled or failed.");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF4A4FC1),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xFF4A4FC1),
+        backgroundColor: Colors.white,
+        elevation: 0,
         title: Row(
           children: [
-            CircleAvatar(backgroundImage: AssetImage(widget.avatar)),
+            CircleAvatar(
+              backgroundImage: AssetImage(widget.avatar),
+              radius: 20,
+            ),
             SizedBox(width: 10),
-            Text(widget.name, style: TextStyle(fontSize: 18)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.name,
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
+                Text(
+                  "DENTIST",
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
           ],
         ),
         actions: [
-          Icon(Icons.call, size: 26, color: Colors.white),
-          SizedBox(width: 15),
-          Icon(Icons.video_call, size: 26, color: Colors.white),
+          Icon(Icons.settings, size: 26, color: Colors.black54),
           SizedBox(width: 15),
         ],
       ),
       body: Column(
         children: [
-          // Chat Messages
           Expanded(
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 15),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
                 ),
               ),
               child: ListView.builder(
@@ -80,17 +123,27 @@ class _ChatScreenState extends State<ChatScreen> {
                         isMe ? Alignment.centerRight : Alignment.centerLeft,
                     child: Container(
                       margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                      padding: EdgeInsets.all(12),
+                      padding: EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         color:
                             isMe
-                                ? Color.fromARGB(255, 68, 107, 180)
-                                : const Color.fromARGB(255, 133, 133, 133),
-                        borderRadius: BorderRadius.circular(12),
+                                ? Color(0xFF567C8D)
+                                : Color.fromARGB(255, 251, 236, 232),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
+                          bottomLeft:
+                              isMe ? Radius.circular(20) : Radius.circular(0),
+                          bottomRight:
+                              isMe ? Radius.circular(0) : Radius.circular(20),
+                        ),
                       ),
                       child: Text(
                         messages[index]["text"]!,
-                        style: TextStyle(fontSize: 16, color: Colors.white),
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isMe ? Colors.white : Colors.black87,
+                        ),
                       ),
                     ),
                   );
@@ -98,32 +151,43 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-
-          // Input Field
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(
               children: [
+                IconButton(
+                  icon: Icon(Icons.attach_file),
+                  onPressed: attachFile,
+                  color: Colors.grey,
+                ),
                 Expanded(
-                  child: TextField(
-                    controller: messageController,
-                    decoration: InputDecoration(
-                      hintText: "Type your message...",
-                      filled: true,
-                      fillColor: Colors.grey[200],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide.none,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 15),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 5,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: messageController,
+                      decoration: InputDecoration(
+                        hintText: "Type your message...",
+                        border: InputBorder.none,
                       ),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 15),
                     ),
                   ),
                 ),
                 SizedBox(width: 10),
                 FloatingActionButton(
                   onPressed: sendMessage,
+                  backgroundColor: Color(0xFF567C8D),
                   child: Icon(Icons.send, color: Colors.white),
-                  backgroundColor: Colors.blueAccent,
                 ),
               ],
             ),

@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'chat_screen.dart';
 
-class ChatsListScreen extends StatelessWidget {
-  final List<Map<String, String>> chats = [
+class ChatsListScreen extends StatefulWidget {
+  @override
+  _ChatsListScreenState createState() => _ChatsListScreenState();
+}
+
+class _ChatsListScreenState extends State<ChatsListScreen> {
+  List<Map<String, String>> chats = [
     {
       "name": "Johnny Doe",
       "message": "Lorem ipsum is simply...",
@@ -41,69 +46,151 @@ class ChatsListScreen extends StatelessWidget {
     },
   ];
 
+  List<Map<String, String>> filteredChats = []; // For search results
+  TextEditingController searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    filteredChats = chats; // Initialize filteredChats with all chats
+  }
+
+  void filterChats(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredChats = chats; // Show all chats if query is empty
+      } else {
+        filteredChats =
+            chats
+                .where(
+                  (chat) =>
+                      chat["name"]!.toLowerCase().contains(query.toLowerCase()),
+                )
+                .toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFF567C8D),
+
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: const Color.fromARGB(255, 241, 240, 240),
+        elevation: 5,
+        selectedItemColor: Color(0xFF4169E1),
+        unselectedItemColor: Colors.grey,
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: "Messages"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+        ],
+      ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 50, left: 20, right: 20, bottom: 20),
+            padding: EdgeInsets.symmetric(vertical: 40, horizontal: 20),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center, // Center content
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Center(child: Image.asset("moeen1.png", height: 60)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Hi, Jared!",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF3E4C5E),
+                      ),
+                    ),
+                    Text(
+                      "23 Jan, 2021",
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
+                    ),
+                  ],
                 ),
-                Icon(Icons.search, color: Colors.white, size: 28),
+                Icon(Icons.notifications, color: Colors.grey, size: 28),
               ],
             ),
           ),
 
-          // Chats List
-          Expanded(
+          // Search Bar
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
             child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 15),
               decoration: BoxDecoration(
-                color: Color.fromARGB(255, 68, 107, 180),
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(40),
-                  topRight: Radius.circular(40),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: TextField(
+                controller: searchController,
+                onChanged: filterChats, // Call filter function on input change
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "Search",
+                  icon: Icon(Icons.search, color: Colors.grey),
                 ),
               ),
-              child: ListView.builder(
-                itemCount: chats.length,
-                padding: EdgeInsets.only(top: 20),
-                itemBuilder: (context, index) {
-                  var chat = chats[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
+            ),
+          ),
+
+          SizedBox(height: 20),
+
+          // Chats List
+          Expanded(
+            child: ListView.builder(
+              itemCount: filteredChats.length,
+              padding: EdgeInsets.symmetric(horizontal: 20),
+              itemBuilder: (context, index) {
+                var chat = filteredChats[index];
+                return Container(
+                  margin: EdgeInsets.only(bottom: 15),
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.2),
+                        blurRadius: 10,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
                     leading: CircleAvatar(
-                      radius: 20,
+                      radius: 25,
                       backgroundImage: AssetImage(chat["avatar"]!),
                     ),
                     title: Text(
                       chat["name"]!,
                       style: TextStyle(
-                        fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        fontSize: 16,
                       ),
                     ),
                     subtitle: Text(
                       chat["message"]!,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: const Color.fromARGB(255, 255, 255, 255),
-                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(color: Colors.grey, fontSize: 14),
                     ),
                     trailing: Text(
                       chat["time"]!,
-                      style: TextStyle(
-                        color: const Color.fromARGB(255, 255, 255, 255),
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -115,9 +202,9 @@ class ChatsListScreen extends StatelessWidget {
                         ),
                       );
                     },
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
         ],

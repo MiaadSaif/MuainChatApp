@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'chats_list_screen.dart';
+import 'login_screen.dart';
+//import 'chats_list_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -9,10 +10,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Chat App',
+      title: 'Login App',
+      debugShowCheckedModeBanner: false, // Remove the debug banner
       theme: ThemeData(primarySwatch: Colors.teal),
-      home: ChatsListScreen(), // Load the new home page
+      initialRoute: '/', // Set initial route to login
+      routes: {
+        // '/': (context) => ChatsListScreen(), // Login screen as the home page
+        '/': (context) => LoginScreen(), // Login screen as the home page
+      },
     );
   }
 }
